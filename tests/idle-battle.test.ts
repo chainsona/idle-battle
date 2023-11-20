@@ -44,7 +44,7 @@ describe("Idle Battle", () => {
     );
 
     const tx = await program.methods
-      .initialize()
+      .initializeHero()
       .accounts({
         player: player.publicKey,
         hero: heroPDA,
@@ -198,7 +198,7 @@ describe("Idle Battle", () => {
       anchor.workspace.IdleBattle.programId
     );
     const tx = await program.methods
-      .resetstats()
+      .resetHeroStats()
       .accounts({
         player: player.publicKey,
         hero: heroPDA,

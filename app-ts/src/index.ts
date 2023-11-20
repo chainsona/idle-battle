@@ -81,7 +81,7 @@ async function train() {
   } catch (e) {
     log("Initialize Hero");
     const tx = await program.methods
-      .initialize()
+      .initializeHero()
       .accounts({
         player: wallet.publicKey,
         hero: heroPDA,
@@ -113,7 +113,7 @@ async function resetStats() {
   let heroData = await program.account.hero.fetch(heroPDA);
 
   const tx = await program.methods
-    .resetstats()
+    .resetHeroStats()
     .accounts({
       hero: heroPDA,
       player: wallet.publicKey,
