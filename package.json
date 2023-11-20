@@ -1,0 +1,18 @@
+{
+        "scripts": {
+                "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
+                "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check"
+        },
+        "dependencies": {
+                "@coral-xyz/anchor": "^0.29.0"
+        },
+        "devDependencies": {
+                "@babel/core": "^7.23.3",
+                "@babel/preset-env": "^7.23.3",
+                "@babel/preset-typescript": "^7.23.3",
+                "@types/jest": "^29.5.8",
+                "babel-jest": "^29.7.0",
+                "jest": "^29.0.3",
+                "prettier": "^2.6.2"
+        }
+}
