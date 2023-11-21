@@ -12,10 +12,12 @@ pub mod constants {
 
     pub const TRAINING_BASE_XP_TO_LEVEL: u64 = 100;
     pub const TRAINING_XP_GROWTH: f64 = 1.1;
-    pub const TRAINING_GOLD_RATE: u64 = 10;
+    pub const TRAINING_REWARD_RATE: u64 = 10;
 
     pub const BATTLE_SEED: &[u8] = b"battle";
     pub const HERO_SEED: &[u8] = b"hero";
+    pub const STAKE_SEED: &[u8] = b"stake";
+    pub const STAKE_INFO_SEED: &[u8] = b"stake_info";
     pub const TOKEN_SEED: &[u8] = b"token";
     pub const VAULT_SEED: &[u8] = b"vault";
 
@@ -29,11 +31,16 @@ pub struct Hero {
     pub training_slot: u64,
     pub xp: u64,
     pub level: u64,
-    pub gold: u64,
+    pub reward: u64,
 }
 
 #[account]
 pub struct BattleRound {
     pub enemy: u64,
     pub hero: u64,
+}
+
+#[account]
+pub struct StakeInfo {
+    pub staked_at: u64,
 }

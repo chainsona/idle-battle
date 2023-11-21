@@ -7,6 +7,10 @@ pub enum IdleBattleError {
     #[msg("Action not authorized")]
     NotAuthorized,
 
+    // Invalid amount.
+    #[msg("Invalid amount")]
+    InvalidAmount,
+
     // Hero is being initialized while already initialized.
     #[msg("Hero already exists")]
     HeroAlreadyExists,

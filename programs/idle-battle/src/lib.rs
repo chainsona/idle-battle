@@ -39,6 +39,11 @@ pub mod idle_battle {
         instructions::reset_hero_stats(ctx)
     }
 
+    /// Stake an amount of $TOKEN
+    pub fn stake(ctx: Context<Stake>, amount: u64) -> Result<()> {
+        instructions::stake(ctx, amount)
+    }
+
     /// Start a battle
     pub fn battle(ctx: Context<Battle>) -> Result<()> {
         instructions::battle(ctx)
