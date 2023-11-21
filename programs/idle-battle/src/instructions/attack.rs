@@ -42,6 +42,7 @@ pub fn attack(ctx: Context<Attack>) -> Result<()> {
 pub struct Attack<'info> {
     #[account(mut)]
     pub player: Signer<'info>,
+
     #[account(
         mut,
         seeds = [constants::BATTLE_SEED],

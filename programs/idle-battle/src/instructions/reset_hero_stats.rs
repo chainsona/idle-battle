@@ -1,9 +1,16 @@
-//! Instruction: ResetStats
+//! Instruction: ResetHeroStats
 use anchor_lang::prelude::*;
 
+use crate::error::IdleBattleError;
 use crate::state::*;
 
 pub fn reset_hero_stats(ctx: Context<ResetStats>) -> Result<()> {
+    // Check admin
+    let is_admin: bool = ctx.accounts.admin.key() == constants::ADMIN_PUBKEY;
+    if !is_admin {
+        return err!(IdleBattleError::NotAuthorized);
+    }
+
     // TODO Unfreeze hero mint
 
     // Set hero as training
@@ -18,8 +25,13 @@ pub fn reset_hero_stats(ctx: Context<ResetStats>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct ResetStats<'info> {
-    #[account(mut)]
-    pub player: Signer<'info>,
+    #[account(address = admin.key())]
+    pub admin: Signer<'info>,
+
+    #[account(address = player.key())]
+    /// CHECK: The player account.
+    pub player: UncheckedAccount<'info>,
+
     #[account(
         mut,
         seeds = [constants::HERO_SEED, player.key.as_ref()],

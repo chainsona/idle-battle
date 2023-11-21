@@ -24,6 +24,7 @@ pub fn train(ctx: Context<Train>) -> Result<()> {
 pub struct Train<'info> {
     #[account(mut)]
     pub player: Signer<'info>,
+
     #[account(
         mut,
         seeds = [constants::HERO_SEED, player.key.as_ref()],

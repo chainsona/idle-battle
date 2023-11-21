@@ -20,6 +20,7 @@ pub fn runaway(ctx: Context<Runaway>) -> Result<()> {
 pub struct Runaway<'info> {
     #[account(mut)]
     pub player: Signer<'info>,
+
     #[account(
         mut,
         seeds = [constants::BATTLE_SEED],

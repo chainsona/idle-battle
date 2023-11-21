@@ -25,6 +25,7 @@ pub fn battle(ctx: Context<Battle>) -> Result<()> {
 pub struct Battle<'info> {
     #[account(mut)]
     pub player: Signer<'info>,
+
     #[account(
         init_if_needed,
         payer = player,

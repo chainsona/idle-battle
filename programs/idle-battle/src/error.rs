@@ -3,6 +3,10 @@ use anchor_lang::prelude::*;
 
 #[error_code]
 pub enum IdleBattleError {
+    // Not authorized to perform this action.
+    #[msg("Action not authorized")]
+    NotAuthorized,
+
     // Hero is being initialized while already initialized.
     #[msg("Hero already exists")]
     HeroAlreadyExists,
