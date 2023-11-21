@@ -17,7 +17,7 @@ pub fn reset_hero_stats(ctx: Context<ResetStats>) -> Result<()> {
     ctx.accounts.hero.training_slot = 0;
     ctx.accounts.hero.xp = 0;
     ctx.accounts.hero.level = 0;
-    ctx.accounts.hero.gold = 0;
+    ctx.accounts.hero.reward = 0;
     msg!("Hero stats reset");
 
     Ok(())

@@ -102,7 +102,7 @@ describe("Idle Battle", () => {
     // await createMintToken(provider.connection, admin, mintKeypair);
 
     let mintAccount = await getMint(provider.connection, mintKeypair.publicKey);
-    expect(mintAccount).not.toBeUndefined();
+    expect(mintAccount?.address).toBeDefined();
   });
 
   it("Admin should send SOL to the player", async () => {
@@ -163,16 +163,16 @@ describe("Idle Battle", () => {
       vaultTokenAccount
     );
 
-    const txMintToPlayer = await mintToChecked(
+    const txMintToVault = await mintToChecked(
       provider.connection,
       admin.payer,
       mintKeypair.publicKey,
       vaultTokenAccount,
       admin.payer,
-      1e9, // 1 token
+      100e9, // 100 token
       9
     );
-    await confirmAndLogTransaction(provider.connection, txMintToPlayer);
+    await confirmAndLogTransaction(provider.connection, txMintToVault);
 
     const balanceAfter = await getAccount(
       provider.connection,
@@ -203,7 +203,7 @@ describe("Idle Battle", () => {
     expect(heroData.trainingSlot.toNumber()).toBe(0);
     expect(heroData.xp.toNumber()).toBe(0);
     expect(heroData.level.toNumber()).toBe(0);
-    expect(heroData.gold.toNumber()).toBe(0);
+    expect(heroData.reward.toNumber()).toBe(0);
   });
 
   it("Hero should be training", async () => {
@@ -245,8 +245,6 @@ describe("Idle Battle", () => {
       player.publicKey
     );
 
-    const heroDataBefore = await program.account.hero.fetch(heroAccount);
-
     const txRecall = await program.methods
       .recall()
       .accounts({
@@ -266,6 +264,7 @@ describe("Idle Battle", () => {
     const heroDataAfter = await program.account.hero.fetch(heroAccount);
 
     expect(heroDataAfter.trainingSlot.toNumber()).toBe(0);
+    expect(heroDataAfter.reward.toNumber()).toBe(0);
   });
 
   it("Hero should gain XP", async () => {
@@ -427,6 +426,8 @@ describe("Idle Battle", () => {
       await confirmAndLogTransaction(provider.connection, txRecall);
     }
 
+    const heroDataAfter = await program.account.hero.fetch(heroAccount);
+
     playerTokenAccount = await getOrCreateAssociatedTokenAccount(
       provider.connection,
       player.payer,
@@ -436,6 +437,7 @@ describe("Idle Battle", () => {
     const amountAfer = playerTokenAccount.amount;
 
     expect(amountAfer).toBeGreaterThan(amountBefore);
+    expect(heroDataAfter.reward.toNumber()).toBe(0);
   });
 
   it("Player should not reset Hero stats", async () => {
@@ -462,7 +464,6 @@ describe("Idle Battle", () => {
 
     expect(heroDataAfter.xp.toNumber()).not.toBe(0);
     expect(heroDataAfter.level.toNumber()).not.toBe(0);
-    expect(heroDataAfter.gold.toNumber()).not.toBe(0);
   });
 
   it("Admin should reset Hero stats", async () => {
@@ -487,6 +488,6 @@ describe("Idle Battle", () => {
     expect(heroDataAfter.trainingSlot.toNumber()).toBe(0);
     expect(heroDataAfter.xp.toNumber()).toBe(0);
     expect(heroDataAfter.level.toNumber()).toBe(0);
-    expect(heroDataAfter.gold.toNumber()).toBe(0);
+    expect(heroDataAfter.reward.toNumber()).toBe(0);
   });
 });

@@ -30,13 +30,13 @@ pub fn recall(ctx: Context<Recall>) -> Result<()> {
         );
     ctx.accounts.hero.level = ctx.accounts.hero.xp / xp_required as u64;
 
-    // Add gold to hero based on time spent training
+    // Add reward to hero based on time spent training
     let slot_passed: u64 = slot - ctx.accounts.hero.training_slot;
-    let gold_gained: u64 = (constants::TRAINING_GOLD_RATE * slot_passed)
+    let reward_earned: u64 = (constants::TRAINING_REWARD_RATE * slot_passed)
         .checked_mul(10u64.pow(ctx.accounts.mint_account.decimals as u32))
         .unwrap();
     if ctx.accounts.hero.level > 1 {
-        ctx.accounts.hero.gold += gold_gained;
+        ctx.accounts.hero.reward += reward_earned;
 
         // TODO Transfer earned $TOKEN to player
         let bump = *ctx.bumps.get("vault_token_account").unwrap();
@@ -52,11 +52,13 @@ pub fn recall(ctx: Context<Recall>) -> Result<()> {
                 },
                 signer,
             ),
-            gold_gained,
+            reward_earned,
         )?;
     }
 
-    // Set hero as not training
+    // Reward has been claimed
+    ctx.accounts.hero.reward = 0;
+    // Hero is not training anymore
     ctx.accounts.hero.training_slot = 0;
     msg!("Hero came back from training");
 

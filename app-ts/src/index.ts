@@ -147,7 +147,7 @@ async function recall() {
   if (newHeroData.level > heroData.level) {
     log(`Hero levels up to ${newHeroData.level}`);
   }
-  log(`Hero earns ${heroData.gold} $GOLD`);
+  log(`Hero earns ${heroData.reward} $TOKEN`);
 }
 
 async function battle() {
