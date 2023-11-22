@@ -28,13 +28,13 @@ pub struct ResetStats<'info> {
     #[account(address = admin.key())]
     pub admin: Signer<'info>,
 
-    #[account(address = player.key())]
-    /// CHECK: The player account.
-    pub player: UncheckedAccount<'info>,
+    #[account(address = user.key())]
+    /// CHECK: The user account.
+    pub user: UncheckedAccount<'info>,
 
     #[account(
         mut,
-        seeds = [constants::HERO_SEED, player.key.as_ref()],
+        seeds = [constants::HERO_SEED, user.key.as_ref()],
         bump,
     )]
     pub hero: Account<'info, Hero>,

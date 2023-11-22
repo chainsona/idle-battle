@@ -24,11 +24,11 @@ pub fn battle(ctx: Context<Battle>) -> Result<()> {
 #[derive(Accounts)]
 pub struct Battle<'info> {
     #[account(mut)]
-    pub player: Signer<'info>,
+    pub user: Signer<'info>,
 
     #[account(
         init_if_needed,
-        payer = player,
+        payer = user,
         space = 8 + std::mem::size_of::<BattleRound>(),
         seeds = [constants::BATTLE_SEED],
         bump,

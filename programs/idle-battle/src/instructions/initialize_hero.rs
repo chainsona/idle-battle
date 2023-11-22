@@ -5,7 +5,7 @@ use crate::state::*;
 
 pub fn initialize_hero(ctx: Context<InitializeHero>) -> Result<()> {
     // Create the data account linked to a NFT
-    ctx.accounts.hero.mint = *ctx.accounts.player.key;
+    ctx.accounts.hero.mint = *ctx.accounts.user.key;
     ctx.accounts.hero.training_slot = 0;
     ctx.accounts.hero.xp = 0;
     ctx.accounts.hero.level = 0;
@@ -18,14 +18,14 @@ pub fn initialize_hero(ctx: Context<InitializeHero>) -> Result<()> {
 #[derive(Accounts)]
 pub struct InitializeHero<'info> {
     #[account(mut)]
-    pub player: Signer<'info>,
+    pub user: Signer<'info>,
 
     #[account(
         init_if_needed,
-        seeds = [constants::HERO_SEED, player.key.as_ref()],
+        seeds = [constants::HERO_SEED, user.key.as_ref()],
         space = 8 + std::mem::size_of::<Hero>(),
         bump,
-        payer = player,
+        payer = user,
     )]
     pub hero: Account<'info, Hero>,
     pub system_program: Program<'info, System>,

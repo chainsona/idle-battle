@@ -38,7 +38,7 @@ pub fn recall(ctx: Context<Recall>) -> Result<()> {
     if ctx.accounts.hero.level > 1 {
         ctx.accounts.hero.reward += reward_earned;
 
-        // TODO Transfer earned $TOKEN to player
+        // TODO Transfer earned $TOKEN to user
         let bump = *ctx.bumps.get("vault_token_account").unwrap();
         let signer: &[&[&[u8]]] = &[&[constants::VAULT_SEED, &[bump]]];
 
@@ -47,7 +47,7 @@ pub fn recall(ctx: Context<Recall>) -> Result<()> {
                 ctx.accounts.token_program.to_account_info(),
                 Transfer {
                     from: ctx.accounts.vault_token_account.to_account_info(),
-                    to: ctx.accounts.player_token_account.to_account_info(),
+                    to: ctx.accounts.user_token_account.to_account_info(),
                     authority: ctx.accounts.vault_token_account.to_account_info(),
                 },
                 signer,
@@ -68,11 +68,11 @@ pub fn recall(ctx: Context<Recall>) -> Result<()> {
 #[derive(Accounts)]
 pub struct Recall<'info> {
     #[account(mut)]
-    pub player: Signer<'info>,
+    pub user: Signer<'info>,
 
     #[account(
         mut,
-        seeds = [constants::HERO_SEED, player.key.as_ref()],
+        seeds = [constants::HERO_SEED, user.key.as_ref()],
         bump,
 
     )]
@@ -88,9 +88,9 @@ pub struct Recall<'info> {
     #[account(
         mut,
         associated_token::mint = mint_account,
-        associated_token::authority = player,
+        associated_token::authority = user,
     )]
-    pub player_token_account: Account<'info, TokenAccount>,
+    pub user_token_account: Account<'info, TokenAccount>,
 
     pub mint_account: Account<'info, Mint>,
     pub token_program: Program<'info, token::Token>,

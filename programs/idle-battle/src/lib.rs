@@ -14,7 +14,7 @@ declare_id!("EZhEi1iBCbUyT3tdiMGpye1GVqSzCcSPWeyYxEZ6drn2");
 pub mod idle_battle {
     use super::*;
 
-    /// Initialize the player account
+    /// Initialize the user account
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
         instructions::initialize(ctx)
     }

@@ -41,7 +41,7 @@ pub fn attack(ctx: Context<Attack>) -> Result<()> {
 #[derive(Accounts)]
 pub struct Attack<'info> {
     #[account(mut)]
-    pub player: Signer<'info>,
+    pub user: Signer<'info>,
 
     #[account(
         mut,

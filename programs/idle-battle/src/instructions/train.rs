@@ -23,11 +23,11 @@ pub fn train(ctx: Context<Train>) -> Result<()> {
 #[derive(Accounts)]
 pub struct Train<'info> {
     #[account(mut)]
-    pub player: Signer<'info>,
+    pub user: Signer<'info>,
 
     #[account(
         mut,
-        seeds = [constants::HERO_SEED, player.key.as_ref()],
+        seeds = [constants::HERO_SEED, user.key.as_ref()],
         bump,
     )]
     pub hero: Account<'info, Hero>,

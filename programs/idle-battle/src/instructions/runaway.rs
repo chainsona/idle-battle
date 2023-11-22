@@ -19,7 +19,7 @@ pub fn runaway(ctx: Context<Runaway>) -> Result<()> {
 #[derive(Accounts)]
 pub struct Runaway<'info> {
     #[account(mut)]
-    pub player: Signer<'info>,
+    pub user: Signer<'info>,
 
     #[account(
         mut,
