@@ -1,5 +1,4 @@
-import { log } from "console";
-
+import { error, log } from "console";
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import {
@@ -25,6 +24,8 @@ import { IdleBattle } from "../target/types/idle_battle";
 
 const BATTLE_SEED = "battle";
 const HERO_SEED = "hero";
+const STAKE_SEED = "stake";
+const STAKE_INFO_SEED = "stake_info";
 const VAULT_SEED = "vault";
 
 async function createMintToken(
@@ -36,7 +37,7 @@ async function createMintToken(
     connection,
     wallet.payer,
     wallet.publicKey,
-    null,
+    wallet.publicKey,
     9,
     mintKeypair
   );
@@ -97,12 +98,40 @@ describe("Idle Battle", () => {
 
   const program = anchor.workspace.IdleBattle as Program<IdleBattle>;
 
-  it("Admin should mint the token", async () => {
-    // Uncomment to mint the token
-    // await createMintToken(provider.connection, admin, mintKeypair);
+  /// Accounts
+  let [vaultTokenAccount] = PublicKey.findProgramAddressSync(
+    [Buffer.from(VAULT_SEED)],
+    program.programId
+  );
+  log(`Vault: ${vaultTokenAccount.toBase58()}`);
 
+  const [heroAccount] = PublicKey.findProgramAddressSync(
+    [Buffer.from(HERO_SEED), player.publicKey.toBuffer()],
+    program.programId
+  );
+  log(`Hero stats: ${heroAccount.toBase58()}`);
+
+  const [userStakeInfo] = PublicKey.findProgramAddressSync(
+    [Buffer.from(STAKE_INFO_SEED), player.publicKey.toBuffer()],
+    program.programId
+  );
+  log(`User stake info: ${userStakeInfo.toBase58()}`);
+
+  const [userStakeAccount] = PublicKey.findProgramAddressSync(
+    [Buffer.from(STAKE_SEED), player.publicKey.toBuffer()],
+    program.programId
+  );
+  log(`User stake: ${userStakeAccount.toBase58()}`);
+
+  it("Admin should mint the token", async () => {
+    try {
+      await createMintToken(provider.connection, admin, mintKeypair);
+    } catch (e) {
+      error(e);
+    }
     let mintAccount = await getMint(provider.connection, mintKeypair.publicKey);
-    expect(mintAccount?.address).toBeDefined();
+
+    expect(mintAccount?.isInitialized).toBe(true);
   });
 
   it("Admin should send SOL to the player", async () => {
@@ -130,12 +159,6 @@ describe("Idle Battle", () => {
   });
 
   it("Admin should initialize the vault", async () => {
-    let [vaultTokenAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from(VAULT_SEED)],
-      program.programId
-    );
-    log(`Token vault: ${vaultTokenAccount.toBase58()}`);
-
     // Initialize the program
     const tx = await program.methods
       .initialize()
@@ -151,13 +174,7 @@ describe("Idle Battle", () => {
     expect(tokenAccount.isInitialized).toBe(true);
   });
 
-  it("Admin mint some tokens into the vault", async () => {
-    let [vaultTokenAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from(VAULT_SEED)],
-      program.programId
-    );
-    log(`Token vault: ${vaultTokenAccount.toBase58()}`);
-
+  it("Admin should mint some tokens into the vault", async () => {
     let balanceBefore = await getAccount(
       provider.connection,
       vaultTokenAccount
@@ -183,11 +200,6 @@ describe("Idle Battle", () => {
   });
 
   it("Hero should be initialized", async () => {
-    const [heroAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from(HERO_SEED), player.publicKey.toBuffer()],
-      program.programId
-    );
-
     const tx = await program.methods
       .initializeHero()
       .accounts({
@@ -228,22 +240,13 @@ describe("Idle Battle", () => {
   });
 
   it("Hero should be recalled", async () => {
-    const [heroAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from(HERO_SEED), player.publicKey.toBuffer()],
-      program.programId
-    );
-
-    const [vaultTokenAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from(VAULT_SEED)],
-      program.programId
-    );
-
     const playerTokenAccount = await getOrCreateAssociatedTokenAccount(
       provider.connection,
       player.payer,
       mintKeypair.publicKey,
       player.publicKey
     );
+    log(`Player $TOKEN account: ${playerTokenAccount.address.toBase58()}`);
 
     const txRecall = await program.methods
       .recall()
@@ -268,16 +271,6 @@ describe("Idle Battle", () => {
   });
 
   it("Hero should gain XP", async () => {
-    const [heroAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from(HERO_SEED), player.publicKey.toBuffer()],
-      program.programId
-    );
-
-    const [vaultTokenAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from(VAULT_SEED)],
-      program.programId
-    );
-
     const playerTokenAccount = await getOrCreateAssociatedTokenAccount(
       provider.connection,
       player.payer,
@@ -321,16 +314,6 @@ describe("Idle Battle", () => {
   });
 
   it("Hero should level up", async () => {
-    const [heroAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from(HERO_SEED), player.publicKey.toBuffer()],
-      program.programId
-    );
-
-    const [vaultTokenAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from(VAULT_SEED)],
-      program.programId
-    );
-
     const playerTokenAccount = await getOrCreateAssociatedTokenAccount(
       provider.connection,
       player.payer,
@@ -380,16 +363,6 @@ describe("Idle Battle", () => {
   });
 
   it("Hero should earn $TOKEN", async () => {
-    const [heroAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from(HERO_SEED), player.publicKey.toBuffer()],
-      program.programId
-    );
-
-    const [vaultTokenAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from(VAULT_SEED)],
-      program.programId
-    );
-
     let playerTokenAccount = await getOrCreateAssociatedTokenAccount(
       provider.connection,
       player.payer,
@@ -440,13 +413,173 @@ describe("Idle Battle", () => {
     expect(heroDataAfter.reward.toNumber()).toBe(0);
   });
 
-  it("Player should not reset Hero stats", async () => {
-    const [heroAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from(HERO_SEED), player.publicKey.toBuffer()],
-      program.programId
+  it("User should stake $TOKEN", async () => {
+    let userTokenAccount = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      player.payer,
+      mintKeypair.publicKey,
+      player.publicKey
+    );
+    log(`User $TOKEN account: ${userTokenAccount.address.toBase58()}`);
+
+    const userTokenAmountBefore =
+      await provider.connection.getTokenAccountBalance(
+        userTokenAccount.address
+      );
+    let userStakeAmountBefore: anchor.web3.RpcResponseAndContext<anchor.web3.TokenAmount> =
+      {
+        context: {
+          slot: 0,
+        },
+        value: {
+          amount: "0",
+          decimals: 0,
+          uiAmount: 0,
+          uiAmountString: "0",
+        },
+      };
+    try {
+      userStakeAmountBefore = await provider.connection.getTokenAccountBalance(
+        userStakeAccount
+      );
+    } catch (e) {
+      error(e);
+    }
+    const stakedAmount = 1;
+    const tx = await program.methods
+      .stake(new anchor.BN(stakedAmount))
+      .accounts({
+        stakeInfo: userStakeInfo,
+        stakeTokenAccount: userStakeAccount,
+        userTokenAccount: userTokenAccount.address,
+        mint: mintKeypair.publicKey,
+        user: player.publicKey,
+        associatedTokenAccount: ASSOCIATED_TOKEN_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([player.payer])
+      .rpc();
+    await confirmAndLogTransaction(provider.connection, tx);
+
+    const userStakeAmountAfter =
+      await provider.connection.getTokenAccountBalance(userStakeAccount);
+    const userTokenAmountAfter =
+      await provider.connection.getTokenAccountBalance(
+        userTokenAccount.address
+      );
+    expect(userTokenAmountAfter.value.uiAmount).toEqual(
+      (userTokenAmountBefore.value.uiAmount || 0) - stakedAmount
+    );
+    expect(userStakeAmountAfter.value.uiAmount).toEqual(
+      (userStakeAmountBefore.value.uiAmount || 0) + stakedAmount
+    );
+  });
+
+  it("User should not unstake more $TOKEN than staked", async () => {
+    // Sleep for 1 second to avoid "Transaction simulation failed:
+    // Error processing Instruction 0: custom program error: 0x3"
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    let userTokenAccount = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      player.payer,
+      mintKeypair.publicKey,
+      player.publicKey
+    );
+    const userTokenAmountBefore =
+      await provider.connection.getTokenAccountBalance(
+        userTokenAccount.address
+      );
+
+    const userStakeAmountBefore =
+      await provider.connection.getTokenAccountBalance(userStakeAccount);
+
+    const unstakedAmount = 100;
+    try {
+      await program.methods
+        .unstake(new anchor.BN(unstakedAmount))
+        .accounts({
+          stakeInfo: userStakeInfo,
+          stakeTokenAccount: userStakeAccount,
+          userTokenAccount: userTokenAccount.address,
+          mint: mintKeypair.publicKey,
+          user: player.publicKey,
+          associatedTokenAccount: ASSOCIATED_TOKEN_PROGRAM_ID,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([player.payer])
+        .rpc();
+    } catch (e) {
+      error(e);
+    }
+
+    const userStakeAmountAfter =
+      await provider.connection.getTokenAccountBalance(userStakeAccount);
+    const userTokenAmountAfter =
+      await provider.connection.getTokenAccountBalance(
+        userTokenAccount.address
+      );
+    expect(userTokenAmountAfter.value.uiAmount).toEqual(
+      userTokenAmountBefore.value.uiAmount
+    );
+    expect(userStakeAmountAfter.value.uiAmount).toEqual(
+      userStakeAmountBefore.value.uiAmount
+    );
+  });
+
+  it("User should unstake $TOKEN", async () => {
+    let userTokenAccount = await getOrCreateAssociatedTokenAccount(
+      provider.connection,
+      player.payer,
+      mintKeypair.publicKey,
+      player.publicKey
     );
 
-    const t = async () => {
+    const userTokenAmountBefore =
+      await provider.connection.getTokenAccountBalance(
+        userTokenAccount.address
+      );
+
+    const userStakeAmountBefore =
+      await provider.connection.getTokenAccountBalance(userStakeAccount);
+
+    const unstakedAmount = 1;
+    const tx = await program.methods
+      .unstake(new anchor.BN(unstakedAmount))
+      .accounts({
+        stakeInfo: userStakeInfo,
+        stakeTokenAccount: userStakeAccount,
+        userTokenAccount: userTokenAccount.address,
+        mint: mintKeypair.publicKey,
+        user: player.publicKey,
+        associatedTokenAccount: ASSOCIATED_TOKEN_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        systemProgram: SystemProgram.programId,
+      })
+      .signers([player.payer])
+      .rpc();
+    await confirmAndLogTransaction(provider.connection, tx);
+
+    const userStakeAmountAfter =
+      await provider.connection.getTokenAccountBalance(userStakeAccount);
+
+    const userTokenAmountAfter =
+      await provider.connection.getTokenAccountBalance(
+        userTokenAccount.address
+      );
+
+    expect(userTokenAmountAfter.value.uiAmount).toEqual(
+      (userTokenAmountBefore.value.uiAmount || 0) + unstakedAmount
+    );
+    expect(userStakeAmountAfter.value.uiAmount).toEqual(
+      (userStakeAmountBefore.value.uiAmount || 0) - unstakedAmount
+    );
+  });
+
+  it("Player should not reset Hero stats", async () => {
+    try {
       await program.methods
         .resetHeroStats()
         .accounts({
@@ -457,9 +590,9 @@ describe("Idle Battle", () => {
         })
         .signers([player.payer])
         .rpc();
-    };
-    // expect(t).toThrow(anchor.AnchorError);
-
+    } catch (e) {
+      error(e);
+    }
     const heroDataAfter = await program.account.hero.fetch(heroAccount);
 
     expect(heroDataAfter.xp.toNumber()).not.toBe(0);
@@ -467,11 +600,6 @@ describe("Idle Battle", () => {
   });
 
   it("Admin should reset Hero stats", async () => {
-    const [heroAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from(HERO_SEED), player.publicKey.toBuffer()],
-      program.programId
-    );
-
     const tx = await program.methods
       .resetHeroStats()
       .accounts({

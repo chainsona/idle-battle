@@ -8,6 +8,7 @@ pub mod reset_hero_stats;
 pub mod runaway;
 pub mod stake;
 pub mod train;
+pub mod unstake;
 
 pub use attack::*;
 pub use battle::*;
@@ -18,3 +19,4 @@ pub use reset_hero_stats::*;
 pub use runaway::*;
 pub use stake::*;
 pub use train::*;
+pub use unstake::*;

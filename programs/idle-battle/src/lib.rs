@@ -44,6 +44,11 @@ pub mod idle_battle {
         instructions::stake(ctx, amount)
     }
 
+    /// Reset the hero stats
+    pub fn unstake(ctx: Context<Unstake>, amount: u64) -> Result<()> {
+        instructions::unstake(ctx, amount)
+    }
+
     /// Start a battle
     pub fn battle(ctx: Context<Battle>) -> Result<()> {
         instructions::battle(ctx)
